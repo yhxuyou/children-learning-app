@@ -7,7 +7,6 @@ class GamesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chineseGames = gamesData.where((g) => g.type == 'chinese').toList();
     final englishGames = gamesData.where((g) => g.type == 'english').toList();
 
     return Scaffold(
@@ -23,31 +22,6 @@ class GamesScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '🌟 识字游戏',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF66BB6A),
-              ),
-            ),
-            const SizedBox(height: 12),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.1,
-              ),
-              itemCount: chineseGames.length,
-              itemBuilder: (context, index) {
-                final game = chineseGames[index];
-                return _buildGameCard(context, game);
-              },
-            ),
-            const SizedBox(height: 24),
             const Text(
               '🔤 英语游戏',
               style: TextStyle(
