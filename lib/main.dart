@@ -22,7 +22,7 @@ class ChildrenLearningApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: '儿童学习乐园',
+      title: '儿童英语乐园',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),

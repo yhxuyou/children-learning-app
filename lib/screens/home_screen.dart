@@ -21,16 +21,16 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    '儿童学习乐园',
+                    '儿童英语乐园',
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFFFF7043),
+                      color: Color(0xFF42A5F5),
                     ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    '一起学习汉字和英语吧！',
+                    '一起快乐学习英语吧！',
                     style: TextStyle(fontSize: 16, color: Colors.black54),
                   ),
                 ],
@@ -43,14 +43,6 @@ class HomeScreen extends StatelessWidget {
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
                 children: [
-                  _buildModuleCard(
-                    context,
-                    title: '汉字学习',
-                    subtitle: '学习有趣的汉字',
-                    icon: '🀄',
-                    color: const Color(0xFFFF7043),
-                    onTap: () => context.push('/chinese'),
-                  ),
                   _buildModuleCard(
                     context,
                     title: '英语学习',
@@ -74,6 +66,14 @@ class HomeScreen extends StatelessWidget {
                     icon: '👨‍👩‍👧',
                     color: const Color(0xFFAB47BC),
                     onTap: () => context.push('/parent'),
+                  ),
+                  _buildModuleCard(
+                    context,
+                    title: '更多功能',
+                    subtitle: '即将上线',
+                    icon: '✨',
+                    color: const Color(0xFFFFCA28),
+                    onTap: () {},
                   ),
                 ],
               ),

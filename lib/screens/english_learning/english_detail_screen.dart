@@ -173,7 +173,7 @@ class _EnglishDetailScreenState extends State<EnglishDetailScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      wordData.category,
+                      categoryNames[wordData.category] ?? wordData.category,
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color(0xFF42A5F5),
