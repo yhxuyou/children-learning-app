@@ -1,13 +1,12 @@
 import 'package:go_router/go_router.dart';
 import '../screens/home_screen.dart';
-import '../screens/chinese_learning/chinese_learning_screen.dart';
-import '../screens/chinese_learning/chinese_detail_screen.dart';
 import '../screens/english_learning/english_learning_screen.dart';
 import '../screens/english_learning/english_detail_screen.dart';
 import '../screens/games/games_screen.dart';
 import '../screens/games/game_play_screen.dart';
 import '../screens/parent/parent_center_screen.dart';
 import '../screens/ai_companion/ai_companion_screen.dart';
+import '../screens/review/review_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -15,16 +14,6 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const HomeScreen(),
-    ),
-    GoRoute(
-      path: '/chinese',
-      builder: (context, state) => const ChineseLearningScreen(),
-    ),
-    GoRoute(
-      path: '/chinese/:char',
-      builder: (context, state) => ChineseDetailScreen(
-        character: state.pathParameters['char']!,
-      ),
     ),
     GoRoute(
       path: '/english',
@@ -35,6 +24,10 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => EnglishDetailScreen(
         word: state.pathParameters['word']!,
       ),
+    ),
+    GoRoute(
+      path: '/review',
+      builder: (context, state) => const ReviewScreen(),
     ),
     GoRoute(
       path: '/games',
