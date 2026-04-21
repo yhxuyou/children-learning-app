@@ -70,23 +70,38 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildStatItem(
-                            '总单词数',
-                            '$totalWords',
-                            '📚',
-                            Colors.blue,
+                          GestureDetector(
+                            onTap: () => _showWordList(context, '所有单词', englishWordsData.map((w) => w.word).toList()),
+                            child: _buildStatItem(
+                              '总单词数',
+                              '$totalWords',
+                              '📚',
+                              Colors.blue,
+                            ),
                           ),
-                          _buildStatItem(
-                            '已学单词',
-                            '$learnedWords',
-                            '✅',
-                            Colors.green,
+                          GestureDetector(
+                            onTap: () => _showWordList(context, '已学单词', progress.masteredEnglishWords),
+                            child: _buildStatItem(
+                              '已学单词',
+                              '$learnedWords',
+                              '✅',
+                              Colors.green,
+                            ),
                           ),
-                          _buildStatItem(
-                            '未学单词',
-                            '$unlearnedWords',
-                            '📖',
-                            Colors.orange,
+                          GestureDetector(
+                            onTap: () {
+                              final unlearnedWordList = englishWordsData
+                                  .where((w) => !progress.masteredEnglishWords.contains(w.word))
+                                  .map((w) => w.word)
+                                  .toList();
+                              _showWordList(context, '未学单词', unlearnedWordList);
+                            },
+                            child: _buildStatItem(
+                              '未学单词',
+                              '$unlearnedWords',
+                              '📖',
+                              Colors.orange,
+                            ),
                           ),
                         ],
                       ),
@@ -248,6 +263,52 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showWordList(BuildContext context, String title, List<String> words) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Container(
+          width: double.maxFinite,
+          constraints: const BoxConstraints(maxHeight: 400),
+          child: SingleChildScrollView(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: words.isEmpty
+                  ? [const Text('暂无数据', style: TextStyle(color: Colors.black38))]
+                  : words
+                      .map((w) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF42A5F5).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              w,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF42A5F5),
+                              ),
+                            ),
+                          ))
+                      .toList(),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('关闭'),
+          ),
+        ],
+      ),
     );
   }
 }

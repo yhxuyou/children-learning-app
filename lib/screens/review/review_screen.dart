@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../data/english_data.dart';
 import '../../services/tts_service.dart';
+import '../../providers/learning_provider.dart';
 
 class ReviewScreen extends StatefulWidget {
   const ReviewScreen({super.key});
@@ -28,6 +30,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
     setState(() {
       if (isCorrect) {
         _correctCount++;
+        final learningProvider = context.read<LearningProvider>();
+        final currentWord = _reviewWords[_currentIndex];
+        learningProvider.markEnglishWordLearned(currentWord.word);
       }
       _currentIndex++;
 
