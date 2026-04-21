@@ -61,7 +61,13 @@ class CsvService {
       final char = line[i];
       
       if (char == '"') {
-        inQuotes = !inQuotes;
+        // 检查是否是转义的引号（两个连续引号）
+        if (i + 1 < line.length && line[i + 1] == '"') {
+          buffer.write('"');
+          i++; // 跳过下一个引号
+        } else {
+          inQuotes = !inQuotes;
+        }
       } else if (char == ',' && !inQuotes) {
         parts.add(buffer.toString());
         buffer.clear();

@@ -6,6 +6,9 @@ import 'providers/settings_provider.dart';
 import 'data/english_data.dart';
 
 void main() async {
+  // 初始化 Flutter binding
+  WidgetsFlutterBinding.ensureInitialized();
+  
   // 加载英语单词数据
   await loadEnglishWordsData();
   

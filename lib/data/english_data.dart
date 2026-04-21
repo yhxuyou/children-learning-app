@@ -90,11 +90,15 @@ final List<EnglishWord> defaultEnglishWordsData = [
 
 // 加载英语单词数据
 Future<void> loadEnglishWordsData() async {
+  print('Starting to load English words from CSV...');
   final loadedWords = await CsvService.loadEnglishWords();
+  print('Loaded ${loadedWords.length} words from CSV');
   if (loadedWords.isNotEmpty) {
     englishWordsData = loadedWords;
+    print('Successfully loaded ${englishWordsData.length} words from CSV');
   } else {
     // 如果CSV加载失败，使用默认数据
     englishWordsData = defaultEnglishWordsData;
+    print('CSV load failed, using default ${englishWordsData.length} words');
   }
 }

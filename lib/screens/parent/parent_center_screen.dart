@@ -70,12 +70,12 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildStatItem(
-                            '汉字',
-                            '${progress.chineseWordsLearned}',
-                            '🀄',
-                            Color(0xFFAB47BC),
-                          ),
+                          // _buildStatItem(
+                          //   '汉字',
+                          //   '${progress.chineseWordsLearned}',
+                          //   '🀄',
+                          //   Color(0xFFAB47BC),
+                          // ),
                           GestureDetector(
                             onTap: () => _showWordList(context, '已学单词', progress.masteredEnglishWords),
                             child: _buildStatItem(
@@ -203,14 +203,14 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        '已学汉字:',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
+                      // const Text(
+                      //   '已学汉字:',
+                      //   style: TextStyle(
+                      //     fontSize: 16,
+                      //     fontWeight: FontWeight.bold,
+                      //     color: Colors.black87,
+                      //   ),
+                      // ),
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,

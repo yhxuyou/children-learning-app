@@ -7,6 +7,8 @@ class TtsService {
 
   final FlutterTts _flutterTts = FlutterTts();
   late final Future<void> _initFuture;
+  Map<String, String>? _englishVoice;
+  Map<String, String>? _chineseVoice;
 
   TtsService._internal() {
     _initFuture = _initialize();
@@ -14,10 +16,15 @@ class TtsService {
 
   Future<void> _initialize() async {
     try {
-      await _flutterTts.setLanguage('zh-CN');
-      await _flutterTts.setSpeechRate(0.4);
       await _flutterTts.setVolume(1.0);
-      await _flutterTts.setPitch(1.2);
+      
+      await _flutterTts.setLanguage('en-US');
+      await _flutterTts.setSpeechRate(0.45);
+      await _flutterTts.setPitch(1.05);
+      
+      await _flutterTts.setLanguage('zh-CN');
+      await _flutterTts.setSpeechRate(0.45);
+      await _flutterTts.setPitch(1.1);
     } catch (e) {
       debugPrint('TTS init error: $e');
     }
@@ -28,6 +35,8 @@ class TtsService {
       await _initFuture;
       await _flutterTts.stop();
       await _flutterTts.setLanguage('zh-CN');
+      await _flutterTts.setSpeechRate(0.45);
+      await _flutterTts.setPitch(1.1);
       await _flutterTts.speak(text);
     } catch (e) {
       debugPrint('TTS speakChinese error: $e');
@@ -39,6 +48,8 @@ class TtsService {
       await _initFuture;
       await _flutterTts.stop();
       await _flutterTts.setLanguage('en-US');
+      await _flutterTts.setSpeechRate(0.45);
+      await _flutterTts.setPitch(1.05);
       await _flutterTts.speak(text);
     } catch (e) {
       debugPrint('TTS speakEnglish error: $e');
