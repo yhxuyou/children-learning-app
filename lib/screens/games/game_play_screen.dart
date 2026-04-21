@@ -22,6 +22,8 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
   List<Map<String, dynamic>> _matchingPairs = [];
   List<Map<String, dynamic>> _shuffledPairs = [];
   Map<String, dynamic>? _selectedItem;
+  int? _selectedTime;
+  bool _showHint = false;
   
   // 单词接龙游戏数据
   String _currentWord = '';
@@ -43,6 +45,8 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
       _score = 0;
       _currentQuestion = 0;
       _selectedItem = null;
+      _selectedTime = null;
+      _showHint = false;
       _wordController.clear();
       _wordChain.clear();
       _matchingPairs = [];
@@ -65,10 +69,10 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
   }
 
   void _initializeMatchingGame() {
-    // 从英语单词数据中随机选择6个单词
+    // 从英语单词数据中随机选择10个单词
     final random = Random();
     final selectedWords = List.from(englishWordsData)..shuffle();
-    selectedWords.length = 6;
+    selectedWords.length = 10;
 
     // 创建配对数据
     for (var word in selectedWords) {
@@ -119,6 +123,17 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
       if (_selectedItem == null) {
         // 第一次选择
         _selectedItem = item;
+        _selectedTime = DateTime.now().millisecondsSinceEpoch;
+        _showHint = false;
+        
+        // 启动定时器，20秒后显示提示
+        Future.delayed(const Duration(seconds: 20), () {
+          if (_selectedItem != null) {
+            setState(() {
+              _showHint = true;
+            });
+          }
+        });
       } else {
         // 第二次选择，检查是否匹配
         if (_selectedItem!['matchId'] == item['matchId'] && _selectedItem!['type'] != item['type']) {
@@ -133,6 +148,8 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
           }
         }
         _selectedItem = null;
+        _selectedTime = null;
+        _showHint = false;
       }
     });
   }
@@ -233,20 +250,24 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                game.iconAsset,
-                style: const TextStyle(fontSize: 80),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                game.description,
-                style: const TextStyle(
-                  fontSize: 20,
-                  color: Colors.black87,
+              // 只在非单词配对游戏中显示logo和描述
+              if (widget.gameId != 'english_word_match') ...[
+                Text(
+                  game.iconAsset,
+                  style: const TextStyle(fontSize: 80),
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 24),
+                Text(
+                  game.description,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+              ],
+              
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -323,6 +344,7 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
           itemBuilder: (context, index) {
             final item = _shuffledPairs[index];
             final isSelected = _selectedItem != null && _selectedItem!['id'] == item['id'];
+            final isHint = _showHint && _selectedItem != null && item['matchId'] == _selectedItem!['matchId'] && item['id'] != _selectedItem!['id'];
             
             return GestureDetector(
               onTap: () => _handleMatchingItemSelect(item),
@@ -330,7 +352,11 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
                 decoration: BoxDecoration(
                   color: isSelected ? const Color(0xFF66BB6A).withOpacity(0.2) : Colors.grey.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: isSelected ? Border.all(color: const Color(0xFF66BB6A), width: 2) : null,
+                  border: isSelected 
+                      ? Border.all(color: const Color(0xFF66BB6A), width: 2)
+                      : isHint
+                          ? Border.all(color: const Color(0xFF42A5F5), width: 2, style: BorderStyle.dashed)
+                          : null,
                 ),
                 child: Center(
                   child: item['type'] == 'image'
@@ -406,50 +432,61 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
         Text(
           '第 ${_currentQuestion + 1}/10 题',
           style: const TextStyle(
-            fontSize: 16,
-            color: Colors.black54,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF66BB6A),
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 32),
         ElevatedButton(
           onPressed: () => _ttsService.speakEnglish(_targetWord),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF42A5F5),
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.volume_up),
-              SizedBox(width: 8),
-              Text('听发音', style: TextStyle(fontSize: 16)),
+              Icon(Icons.volume_up, size: 24),
+              SizedBox(width: 12),
+              Text('听发音', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ],
           ),
         ),
-        const SizedBox(height: 32),
-        Column(
-          children: _options.map((option) {
-            return Container(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              child: ElevatedButton(
-                onPressed: () => _handleListeningOptionSelect(option),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF66BB6A),
-                  side: const BorderSide(color: Color(0xFF66BB6A), width: 2),
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  option,
-                  style: const TextStyle(fontSize: 18),
+        const SizedBox(height: 48),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 2.5,
+          ),
+          itemCount: _options.length,
+          itemBuilder: (context, index) {
+            final option = _options[index];
+            return ElevatedButton(
+              onPressed: () => _handleListeningOptionSelect(option),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF66BB6A),
+                side: const BorderSide(color: Color(0xFF66BB6A), width: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
+              child: Text(
+                option,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             );
-          }).toList(),
+          },
         ),
       ],
     );
