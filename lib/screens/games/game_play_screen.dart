@@ -33,6 +33,10 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
   // 听力大挑战游戏数据
   String _targetWord = '';
   List<String> _options = [];
+  int _listeningMode = 0; // 0: 图片选择, 1: 单词选择, 2: 单词拼写
+  List<String> _incorrectWords = [];
+  TextEditingController _listeningController = TextEditingController();
+  bool _listeningGameOver = false;
 
   @override
   void initState() {
@@ -48,11 +52,15 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
       _selectedTime = null;
       _showHint = false;
       _wordController.clear();
+      _listeningController.clear();
       _wordChain.clear();
       _matchingPairs = [];
       _shuffledPairs = [];
       _targetWord = '';
       _options = [];
+      _listeningMode = 0;
+      _incorrectWords = [];
+      _listeningGameOver = false;
 
       switch (widget.gameId) {
         case 'english_word_match':
@@ -102,20 +110,53 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
   }
 
   void _initializeListeningGame() {
-    // 随机选择一个目标单词和三个干扰选项
+    // 随机选择一个目标单词
     final random = Random();
-    final targetIndex = random.nextInt(englishWordsData.length);
-    _targetWord = englishWordsData[targetIndex].word;
-
-    // 生成选项
-    _options = [_targetWord];
-    while (_options.length < 4) {
-      final randomWord = englishWordsData[random.nextInt(englishWordsData.length)].word;
-      if (!_options.contains(randomWord)) {
-        _options.add(randomWord);
-      }
+    String targetWord;
+    
+    // 如果有答错的单词，优先使用答错的单词
+    if (_incorrectWords.isNotEmpty) {
+      targetWord = _incorrectWords.removeAt(0);
+    } else {
+      // 从词库中随机选择
+      final targetIndex = random.nextInt(englishWordsData.length);
+      targetWord = englishWordsData[targetIndex].word;
     }
-    _options.shuffle();
+    
+    _targetWord = targetWord;
+    _options = [];
+
+    switch (_listeningMode) {
+      case 0: // 图片选择模式
+        // 生成3个图片选项
+        _options = [_targetWord];
+        while (_options.length < 3) {
+          final randomWord = englishWordsData[random.nextInt(englishWordsData.length)].word;
+          if (!_options.contains(randomWord)) {
+            _options.add(randomWord);
+          }
+        }
+        _options.shuffle();
+        break;
+        
+      case 1: // 单词选择模式
+        // 生成3个单词选项
+        _options = [_targetWord];
+        while (_options.length < 3) {
+          final randomWord = englishWordsData[random.nextInt(englishWordsData.length)].word;
+          if (!_options.contains(randomWord)) {
+            _options.add(randomWord);
+          }
+        }
+        _options.shuffle();
+        break;
+        
+      case 2: // 单词拼写模式
+        // 不需要生成选项，用户自己输入
+        _options = [];
+        _listeningController.clear();
+        break;
+    }
   }
 
   void _handleMatchingItemSelect(Map<String, dynamic> item) {
@@ -180,15 +221,114 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
     setState(() {
       if (option == _targetWord) {
         _score += 15;
-      }
-      _currentQuestion++;
-
-      if (_currentQuestion < 10) {
-        _initializeListeningGame();
+        
+        // 检查是否还有题目
+        if (_incorrectWords.isEmpty && _currentQuestion >= 9) {
+          // 所有题目都答对了
+          if (_listeningMode < 2) {
+            // 询问是否继续挑战下一模式
+            _showContinueDialog();
+          } else {
+            // 所有模式都完成了
+            _showListeningGameComplete();
+          }
+        } else {
+          // 继续当前模式
+          _currentQuestion++;
+          _initializeListeningGame();
+        }
       } else {
-        _showGameOver();
+        // 答错了，添加到答错列表
+        if (!_incorrectWords.contains(_targetWord)) {
+          _incorrectWords.add(_targetWord);
+        }
+        // 重新开始当前题目
+        _initializeListeningGame();
       }
     });
+  }
+
+  void _handleListeningSubmit() {
+    final input = _listeningController.text.trim().toLowerCase();
+    setState(() {
+      if (input == _targetWord.toLowerCase()) {
+        _score += 20;
+        
+        // 检查是否还有题目
+        if (_incorrectWords.isEmpty && _currentQuestion >= 9) {
+          // 所有题目都答对了
+          _showListeningGameComplete();
+        } else {
+          // 继续当前模式
+          _currentQuestion++;
+          _initializeListeningGame();
+        }
+      } else {
+        // 答错了，添加到答错列表
+        if (!_incorrectWords.contains(_targetWord)) {
+          _incorrectWords.add(_targetWord);
+        }
+        // 重新开始当前题目
+        _initializeListeningGame();
+      }
+    });
+  }
+
+  void _showContinueDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('挑战成功！'),
+        content: Text('你已经完成了${_listeningMode == 0 ? '图片选择' : '单词选择'}模式，是否继续挑战下一模式？'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _showGameOver();
+            },
+            child: const Text('返回游戏中心'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() {
+                _listeningMode++;
+                _currentQuestion = 0;
+                _incorrectWords = [];
+                _initializeListeningGame();
+              });
+            },
+            child: const Text('继续挑战'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showListeningGameComplete() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('恭喜你！'),
+        content: const Text('你已经完成了所有听力挑战，全部答对了！'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+            child: const Text('返回游戏中心'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _initializeGame();
+            },
+            child: const Text('重新开始'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showGameOver() {
@@ -437,6 +577,14 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
             color: Color(0xFF66BB6A),
           ),
         ),
+        const SizedBox(height: 8),
+        Text(
+          _listeningMode == 0 ? '图片选择模式' : _listeningMode == 1 ? '单词选择模式' : '单词拼写模式',
+          style: const TextStyle(
+            fontSize: 16,
+            color: Color(0xFF42A5F5),
+          ),
+        ),
         const SizedBox(height: 32),
         ElevatedButton(
           onPressed: () => _ttsService.speakEnglish(_targetWord),
@@ -458,36 +606,105 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
           ),
         ),
         const SizedBox(height: 48),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 2.5,
-          ),
-          itemCount: _options.length,
-          itemBuilder: (context, index) {
-            final option = _options[index];
-            return ElevatedButton(
-              onPressed: () => _handleListeningOptionSelect(option),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF66BB6A),
-                side: const BorderSide(color: Color(0xFF66BB6A), width: 2),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+        
+        // 根据不同模式显示不同界面
+        if (_listeningMode == 0) // 图片选择模式
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 1.2,
+            ),
+            itemCount: _options.length,
+            itemBuilder: (context, index) {
+              final option = _options[index];
+              final wordData = englishWordsData.firstWhere((w) => w.word == option);
+              return GestureDetector(
+                onTap: () => _handleListeningOptionSelect(option),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF66BB6A), width: 2),
+                  ),
+                  child: Center(
+                    child: Text(
+                      wordData.imageAsset,
+                      style: const TextStyle(fontSize: 48),
+                    ),
+                  ),
                 ),
+              );
+            },
+          )
+        else if (_listeningMode == 1) // 单词选择模式
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 2,
+            ),
+            itemCount: _options.length,
+            itemBuilder: (context, index) {
+              final option = _options[index];
+              return ElevatedButton(
+                onPressed: () => _handleListeningOptionSelect(option),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF66BB6A),
+                  side: const BorderSide(color: Color(0xFF66BB6A), width: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  option,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              );
+            },
+          )
+        else if (_listeningMode == 2) // 单词拼写模式
+          Column(
+            children: [
+              TextField(
+                controller: _listeningController,
+                decoration: InputDecoration(
+                  hintText: '请输入你听到的单词',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Color(0xFF66BB6A), width: 2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onSubmitted: (_) => _handleListeningSubmit(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 20),
               ),
-              child: Text(
-                option,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _handleListeningSubmit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF66BB6A),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: const Text('提交', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
-            );
-          },
-        ),
+            ],
+          ),
       ],
     );
   }
