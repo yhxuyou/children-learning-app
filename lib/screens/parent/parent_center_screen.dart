@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/learning_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../data/english_data.dart';
 
 class ParentCenterScreen extends StatefulWidget {
   const ParentCenterScreen({super.key});
@@ -34,6 +35,9 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
         builder: (context, learningProvider, settingsProvider, child) {
           final progress = learningProvider.progress;
           final settings = settingsProvider;
+          final totalWords = englishWordsData.length;
+          final learnedWords = progress.masteredEnglishWords.length;
+          final unlearnedWords = totalWords - learnedWords;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -41,7 +45,7 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '📊 学习报告',
+                  '📊 英语学习报告',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -67,19 +71,34 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           _buildStatItem(
-                            '汉字',
-                            '${progress.chineseWordsLearned}',
-                            '🀄',
+                            '总单词数',
+                            '$totalWords',
+                            '📚',
+                            Colors.blue,
                           ),
                           _buildStatItem(
-                            '英语',
-                            '${progress.englishWordsLearned}',
-                            '🔤',
+                            '已学单词',
+                            '$learnedWords',
+                            '✅',
+                            Colors.green,
                           ),
+                          _buildStatItem(
+                            '未学单词',
+                            '$unlearnedWords',
+                            '📖',
+                            Colors.orange,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
                           _buildStatItem(
                             '学习时长',
                             '${progress.totalStudyTime}分钟',
                             '⏰',
+                            Colors.purple,
                           ),
                         ],
                       ),
@@ -145,7 +164,7 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  '🏆 已掌握',
+                  '🏆 已学单词',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -164,42 +183,7 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        '已学汉字:',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: progress.masteredChineseChars.isEmpty
-                            ? [const Text('暂无', style: TextStyle(color: Colors.black38))]
-                            : progress.masteredChineseChars
-                                .map((c) => Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFAB47BC).withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        c,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          color: Color(0xFFAB47BC),
-                                        ),
-                                      ),
-                                    ))
-                                .toList(),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        '已学英语:',
+                        '已掌握的单词:',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -243,17 +227,17 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
     );
   }
 
-  Widget _buildStatItem(String label, String value, String icon) {
+  Widget _buildStatItem(String label, String value, String icon, Color color) {
     return Column(
       children: [
         Text(icon, style: const TextStyle(fontSize: 32)),
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Color(0xFFAB47BC),
+            color: color,
           ),
         ),
         Text(
