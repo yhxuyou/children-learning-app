@@ -3,8 +3,12 @@ import 'package:provider/provider.dart';
 import 'services/router.dart';
 import 'providers/learning_provider.dart';
 import 'providers/settings_provider.dart';
+import 'data/english_data.dart';
 
-void main() {
+void main() async {
+  // 加载英语单词数据
+  await loadEnglishWordsData();
+  
   runApp(
     MultiProvider(
       providers: [
