@@ -45,7 +45,7 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '📊 英语学习报告',
+                  '📊 学习报告',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -70,6 +70,33 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
+                          _buildStatItem(
+                            '汉字',
+                            '${progress.chineseWordsLearned}',
+                            '🀄',
+                            Color(0xFFAB47BC),
+                          ),
+                          GestureDetector(
+                            onTap: () => _showWordList(context, '已学单词', progress.masteredEnglishWords),
+                            child: _buildStatItem(
+                              '已学英语',
+                              '$learnedWords',
+                              '🔤',
+                              Colors.green,
+                            ),
+                          ),
+                          _buildStatItem(
+                            '学习时长',
+                            '${progress.totalStudyTime}分钟',
+                            '⏰',
+                            Colors.purple,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
                           GestureDetector(
                             onTap: () => _showWordList(context, '所有单词', englishWordsData.map((w) => w.word).toList()),
                             child: _buildStatItem(
@@ -77,15 +104,6 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
                               '$totalWords',
                               '📚',
                               Colors.blue,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () => _showWordList(context, '已学单词', progress.masteredEnglishWords),
-                            child: _buildStatItem(
-                              '已学单词',
-                              '$learnedWords',
-                              '✅',
-                              Colors.green,
                             ),
                           ),
                           GestureDetector(
@@ -102,18 +120,6 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
                               '📖',
                               Colors.orange,
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildStatItem(
-                            '学习时长',
-                            '${progress.totalStudyTime}分钟',
-                            '⏰',
-                            Colors.purple,
                           ),
                         ],
                       ),
@@ -179,7 +185,7 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  '🏆 已学单词',
+                  '🏆 已掌握',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -198,7 +204,42 @@ class _ParentCenterScreenState extends State<ParentCenterScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        '已掌握的单词:',
+                        '已学汉字:',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: progress.masteredChineseChars.isEmpty
+                            ? [const Text('暂无', style: TextStyle(color: Colors.black38))]
+                            : progress.masteredChineseChars
+                                .map((c) => Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFAB47BC).withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        c,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          color: Color(0xFFAB47BC),
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        '已学英语:',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

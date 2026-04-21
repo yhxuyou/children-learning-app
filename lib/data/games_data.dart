@@ -4,7 +4,7 @@ final List<Game> gamesData = [
   Game(
     id: 'english_word_match',
     name: '单词配对',
-    description: '',
+    description: '把单词和图片配对',
     type: 'english',
     difficulty: 1,
     iconAsset: '🎴',
