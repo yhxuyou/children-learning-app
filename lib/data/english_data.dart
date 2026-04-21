@@ -1,6 +1,11 @@
 import '../models/english_word.dart';
+import '../services/csv_service.dart';
 
-final List<EnglishWord> englishWordsData = [
+// 初始化为空列表，在App启动时加载
+List<EnglishWord> englishWordsData = [];
+
+// 默认英语单词数据（作为备份）
+final List<EnglishWord> defaultEnglishWordsData = [
   EnglishWord(
     word: 'apple',
     pronunciation: '/ˈæpəl/',
@@ -82,3 +87,14 @@ final List<EnglishWord> englishWordsData = [
     examples: ['I drink milk in the morning.', 'The milk is fresh.'],
   ),
 ];
+
+// 加载英语单词数据
+Future<void> loadEnglishWordsData() async {
+  final loadedWords = await CsvService.loadEnglishWords();
+  if (loadedWords.isNotEmpty) {
+    englishWordsData = loadedWords;
+  } else {
+    // 如果CSV加载失败，使用默认数据
+    englishWordsData = defaultEnglishWordsData;
+  }
+}
